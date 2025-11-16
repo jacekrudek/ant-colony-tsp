@@ -18,6 +18,8 @@ class Colony:
         self.best_path = None
         self.best_path_length = float('inf')
 
+        self.last_iteration_paths = []
+
     def _init_pheromones(self):
         # Initialize pheromones on all edges to a small value
         matrix = {}
@@ -40,6 +42,8 @@ class Colony:
             if length < self.best_path_length:
                 self.best_path_length = length
                 self.best_path = path
+        
+        self.last_iteration_paths = list(all_paths)
 
         # 2. Evaporate all pheromones
         for i in self.pheromone_matrix:

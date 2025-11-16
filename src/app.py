@@ -1,89 +1,100 @@
-# in src/app.py
-
 import pygame
 import pygame_gui
 from src.ui.sidebar import Sidebar
+from src.ui.sidepanels import SidePanels
+from src.ui.mainpanel import MainPanel
 
-# --- 1. Add new imports ---
 from src.aco.problem import TSPProblem
 from src.aco.colony import Colony
-import time
 
-# --- Constants ---
-GAME_WIDTH = 800
+# Layout constants
+LEFT_PANEL_WIDTH = 200
+CENTER_WIDTH = 800
 SIDEBAR_WIDTH = 200
-SCREEN_WIDTH = GAME_WIDTH + SIDEBAR_WIDTH
+SCREEN_WIDTH = LEFT_PANEL_WIDTH + CENTER_WIDTH + SIDEBAR_WIDTH
 SCREEN_HEIGHT = 600
+
+# colours
+TOP_PATH_COLORS = [(255, 100, 100), (255, 180, 80), (80, 180, 255)]
+BEST_COLOR = (0, 255, 0)
+PURPLE = (150, 80, 200)
 
 class App:
     def __init__(self):
 
         pygame.init()
-        pygame.display.set_caption("My Pygame App")
+        pygame.font.init()
+        pygame.display.set_caption("ACO Visualisation")
 
         # Create the main window
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.running = True
 
-        # ... existing pygame, screen, clock setup ...
+        self.small_font = pygame.font.SysFont(None, 16)
+
+        # UI manager and sidebar (sidebar placed to the right of center)
         self.ui_manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.sidebar = Sidebar(GAME_WIDTH, SIDEBAR_WIDTH, SCREEN_HEIGHT, self.ui_manager)
+        # Sidebar expects the x offset for layout; give it left + center width
+        self.sidebar = Sidebar(LEFT_PANEL_WIDTH + CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_HEIGHT, self.ui_manager)
 
-        # --- Game-specific variables ---
-        self.slider_value = 50.0 # To store the slider's value
-
-        # --- 2. Initialize the ACO Problem ---
+        # --- Problem & Colony --
+        # vertices were generated previously to fit GAME_WIDTH x SCREEN_HEIGHT;
+        # now center area is CENTER_WIDTH so pass its inner drawing size
         self.problem = TSPProblem(
-            num_vertices=20, 
-            width=GAME_WIDTH - 20,  # Give a 10px margin for drawing
+            num_vertices=20,
+            width=CENTER_WIDTH - 20,
             height=SCREEN_HEIGHT - 20
         )
         self.colony = Colony(
             problem=self.problem,
             num_ants=50,
-            alpha=1.0,  # Pheromone importance
-            beta=2.0,   # Distance importance
+            alpha=1.0,
+            beta=2.0,
             evaporation_rate=0.1
         )
+        self.side_panels = SidePanels(
+            panel_width=LEFT_PANEL_WIDTH,
+            panel_height=SCREEN_HEIGHT,
+            small_font=self.small_font,
+            src_w=CENTER_WIDTH - 20,
+            src_h=SCREEN_HEIGHT - 20
+        )
+        self.main_panel = MainPanel(
+            width= CENTER_WIDTH, 
+            height= SCREEN_HEIGHT, 
+            src_w=CENTER_WIDTH - 20, 
+            src_h=SCREEN_HEIGHT - 20,
+            purple=PURPLE, 
+            best_color=BEST_COLOR
+        )
 
+
+        # simulation controls
         self.simulation_running = False
-
-        self.iterations_per_second = 10  # default
+        self.iterations_per_second = 10
         self.iteration_accumulator = 0.0
         self.iteration_count = 0
-        self.last_log_time = time.time()
-        # ...
 
     def run(self):
         """The main game loop."""
         while self.running:
-            time_delta = self.clock.tick(60) / 1000.0  # Time since last frame in seconds
-
-            # 1. Handle Events
+            time_delta = self.clock.tick(60) / 1000.0  # seconds
             self.handle_events()
-
-            # 2. Update Logic
             self.update(time_delta)
-
-            # 3. Draw Everything
             self.draw()
-
         pygame.quit()
 
     def handle_events(self):
-        """Process all input events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            
+
             self.ui_manager.process_events(event)
 
-            # --- 3. Connect UI to Colony Params ---
             if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                 if event.ui_element == self.sidebar.alpha_slider:
                     self.colony.alpha = event.value
-                    # update label text
                     self.sidebar.alpha_label.set_text(f"Alpha: {event.value:.2f}")
                 elif event.ui_element == self.sidebar.beta_slider:
                     self.colony.beta = event.value
@@ -92,24 +103,19 @@ class App:
                     self.colony.evaporation_rate = event.value
                     self.sidebar.evap_label.set_text(f"Evaporation: {event.value:.2f}")
                 elif event.ui_element == self.sidebar.speed_slider:
-                    # update iterations per second
                     self.iterations_per_second = int(event.value)
                     self.sidebar.speed_label.set_text(f"Speed: {self.iterations_per_second} it/s")
 
-
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
-                # keep but we don't need to do anything special here
                 if event.ui_element == self.sidebar.ants_input:
                     pass
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.sidebar.apply_ants_button:
-                    # Try to parse ants count and recreate colony with new size
                     try:
                         new_ants = int(self.sidebar.ants_input.get_text())
                         if new_ants <= 0:
                             raise ValueError("must be > 0")
-                        # Recreate colony so pheromone matrix and ants list reset to new num
                         self.colony = Colony(
                             problem=self.problem,
                             num_ants=new_ants,
@@ -126,76 +132,66 @@ class App:
                 elif event.ui_element == self.sidebar.stop_button:
                     self.simulation_running = False
                     print("Simulation stopped")
+                elif event.ui_element == self.sidebar.step_button:
+                    # run exactly one iteration and log stats (does not toggle running)
+                    stats = self.colony.run_iteration()
+                    self.iteration_count += 1
+                    print(f"[step {self.iteration_count}] best={stats['best_length']:.4f} "
+                          f"min={stats['min_length']:.4f} avg={stats['avg_length']:.4f} "
+                          f"paths={stats['paths_count']}")
 
     def update(self, time_delta):
-        """Update game state and UI."""
-        
-        # Run iterations at the requested rate
         if self.simulation_running:
             self.iteration_accumulator += time_delta
             interval = 1.0 / max(1, self.iterations_per_second)
-            # run as many iterations as fit into the accumulator
             while self.iteration_accumulator >= interval:
                 stats = self.colony.run_iteration()
                 self.iteration_accumulator -= interval
                 self.iteration_count += 1
-
-                # Log iteration stats to console
                 print(f"[iter {self.iteration_count}] best={stats['best_length']:.4f} "
                       f"min={stats['min_length']:.4f} avg={stats['avg_length']:.4f} "
                       f"paths={stats['paths_count']}")
-        
         self.ui_manager.update(time_delta)
 
+    # utility: map problem-space point -> target rect with padding
+    def _map_point(self, x, y, src_w, src_h, dst_w, dst_h, padding=8):
+        sx = padding + (x / max(1, src_w)) * (dst_w - 2 * padding)
+        sy = padding + (y / max(1, src_h)) * (dst_h - 2 * padding)
+        return int(sx), int(sy)
+
+    def _draw_path_on_surface(self, surface, path, color, src_w, src_h):
+        if not path or len(path) < 2:
+            return
+        pts = []
+        dst_w, dst_h = surface.get_size()
+        for vidx in path:
+            v = self.problem.vertices[vidx]
+            pts.append(self._map_point(v.x, v.y, src_w, src_h, dst_w, dst_h))
+        # draw segments
+        for i in range(len(pts) - 1):
+            pygame.draw.line(surface, color, pts[i], pts[i+1], 2)
+        # draw nodes
+        for p in pts:
+            pygame.draw.circle(surface, (240,240,240), p, 2)
+
     def draw(self):
-        """Draw everything to the screen."""
-        
-        # 1. Draw the "Game" area (left side)
-        game_surface = pygame.Surface((GAME_WIDTH, SCREEN_HEIGHT))
-        game_surface.fill(pygame.Color(0, 0, 20)) # Very dark blue
-        
-        # --- 5. Draw the ACO Visualization ---
-        
-        # A. Draw Pheromone Trails (optional and can be slow)
-        # We find a max pheromone to normalize for brightness
-        max_pheromone = max(max(row.values()) for row in self.colony.pheromone_matrix.values() if row)
-        if max_pheromone == 0: max_pheromone = 1.0 # Avoid division by zero
+        # Fill background
+        self.screen.fill((10, 10, 10))
 
-        for i in range(self.problem.num_vertices):
-            for j in range(i + 1, self.problem.num_vertices):
-                vertice_a = self.problem.vertices[i]
-                vertice_b = self.problem.vertices[j]
-                
-                pheromone = self.colony.pheromone_matrix[i][j]
-                # Normalize to a 0-255 alpha (transparency) value
-                alpha = min(255, int((pheromone / max_pheromone) * 255))
-                
-                if alpha > 10: # Only draw trails with some pheromone
-                    # Add 10 to x/y for the margin we created
-                    pygame.draw.line(game_surface, (100, 100, 255, alpha), 
-                                     (vertice_a.x + 10, vertice_a.y + 10), 
-                                     (vertice_b.x + 10, vertice_b.y + 10), 1)
+        self.side_panels.draw(self.screen, self.problem, self.colony, TOP_PATH_COLORS, BEST_COLOR)
 
-        # B. Draw the Best Path
-        if self.colony.best_path:
-            path_points = []
-            for vertice_index in self.colony.best_path:
-                vertice = self.problem.vertices[vertice_index]
-                path_points.append((vertice.x + 10, vertice.y + 10))
-            pygame.draw.lines(game_surface, (0, 255, 0), False, path_points, 2) # Bright green
-            
-        # C. Draw Vertices
-        for vertice in self.problem.vertices:
-            pygame.draw.circle(game_surface, (255, 255, 255), 
-                               (vertice.x + 10, vertice.y + 10), 5) # White circles
+        self.main_panel.draw(self.screen, LEFT_PANEL_WIDTH, self.problem, self.colony)
 
-        # --- Blit game surface and UI (existing code) ---
-        self.screen.blit(game_surface, (0, 0))
+         # --- iteration counter (top of center area) ---
+        iter_text = f"Iteration: {self.iteration_count}"
+        iter_surf = self.small_font.render(iter_text, True, (220, 220, 220))
+        iter_pos = (LEFT_PANEL_WIDTH + 8, 8)  # adjust position if you want
+        self.screen.blit(iter_surf, iter_pos)
 
-        # Draw the sidebar background
+        # ===== Sidebar (right) background and UI =====
         sidebar_bg = pygame.Surface((SIDEBAR_WIDTH, SCREEN_HEIGHT))
-        sidebar_bg.fill(pygame.Color(50, 50, 50)) # Dark grey
-        self.screen.blit(sidebar_bg, (GAME_WIDTH, 0))
+        sidebar_bg.fill((50,50,50))
+        self.screen.blit(sidebar_bg, (LEFT_PANEL_WIDTH + CENTER_WIDTH, 0))
 
         self.ui_manager.draw_ui(self.screen)
         pygame.display.flip()

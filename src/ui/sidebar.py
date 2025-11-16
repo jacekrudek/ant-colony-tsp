@@ -98,3 +98,10 @@ class Sidebar:
         self.stop_button = UIButton(pygame.Rect(x + (w // 2) + 4, y, (w // 2) - 4, btn_h),
                                     text="Stop",
                                     manager=ui_manager)
+        
+        y += btn_h + spacing
+
+        # Step (single-iteration) button
+        self.step_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                    text="Step",
+                                    manager=ui_manager)
