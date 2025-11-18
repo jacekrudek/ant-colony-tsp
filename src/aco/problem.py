@@ -1,11 +1,14 @@
 from src.aco.vertice import Vertice
 import random
 
+from src.config import CENTER_WIDTH, SCREEN_HEIGHT
+
+
 class TSPProblem:
-    def __init__(self, num_vertices, width, height):
+    def __init__(self, num_vertices):
         # Create random vertices within the "game" area
         self.vertices = [
-            Vertice(random.randint(0, width), random.randint(0, height)) 
+            Vertice(random.randint(0, CENTER_WIDTH - 20), random.randint(0, SCREEN_HEIGHT - 20)) 
             for _ in range(num_vertices)
         ]
         self.num_vertices = num_vertices

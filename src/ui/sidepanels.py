@@ -1,14 +1,15 @@
-# ...existing code...
+
 import pygame
 
+from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SCREEN_HEIGHT
+
+
 class SidePanels:
-    def __init__(self, panel_width, panel_height, small_font, src_w, src_h, padding=8):
-        self.panel_width = panel_width
-        self.panel_height = panel_height
+    def __init__(self, small_font):
         self.small_font = small_font
-        self.src_w = src_w
-        self.src_h = src_h
-        self.padding = padding
+        self.src_w = CENTER_WIDTH - 20
+        self.src_h = SCREEN_HEIGHT - 20
+        self.padding = 8
 
     def _draw_path_on_surface(self, surface, problem, path, color, top_offset):
         """Draw path inside surface, leaving top_offset pixels free for label."""
@@ -53,11 +54,11 @@ class SidePanels:
         top_paths = sorted_paths[:3]
 
         # Panel 1: Best overall
-        w1 = pygame.Surface((self.panel_width, panel_h))
+        w1 = pygame.Surface((LEFT_PANEL_WIDTH, panel_h))
         w1.fill((25, 25, 35))
 
         # draw label background to avoid overlap
-        pygame.draw.rect(w1, (20, 20, 30), pygame.Rect(0, 0, self.panel_width, label_h))
+        pygame.draw.rect(w1, (20, 20, 30), pygame.Rect(0, 0, LEFT_PANEL_WIDTH, label_h))
         if getattr(colony, "best_path", None):
             self._draw_path_on_surface(w1, problem, colony.best_path, best_color, top_offset=label_h)
             label = f"Best overall: {colony.best_path_length:.2f}"
@@ -71,12 +72,12 @@ class SidePanels:
 
         # Panels 2..4: top 1..3 of current iteration
         for i in range(3):
-            wi = pygame.Surface((self.panel_width, panel_h))
+            wi = pygame.Surface((LEFT_PANEL_WIDTH, panel_h))
             wi.fill((25, 25, 35))
             y = (i + 1) * panel_h
 
             # label area background
-            pygame.draw.rect(wi, (20, 20, 30), pygame.Rect(0, 0, self.panel_width, label_h))
+            pygame.draw.rect(wi, (20, 20, 30), pygame.Rect(0, 0, LEFT_PANEL_WIDTH, label_h))
 
             if i < len(top_paths):
                 path, length = top_paths[i]
@@ -90,4 +91,3 @@ class SidePanels:
             text_y = (label_h - self.small_font.get_height()) // 2
             wi.blit(text_surf, (8, text_y))
             target_surface.blit(wi, (0, y))
-# ...existing code...

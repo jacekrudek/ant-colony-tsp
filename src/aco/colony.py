@@ -1,12 +1,10 @@
-# in src/aco/colony.py
 import random
-from src.aco.ant import Ant # We will create this next
+from src.aco.ant import Ant  # Upewnij się, że ścieżka jest poprawna
 
 class Colony:
     def __init__(self, problem, num_ants, alpha, beta, evaporation_rate):
         self.problem = problem
         self.num_ants = num_ants
-        
         # --- Algorithm Parameters ---
         self.alpha = alpha  # Pheromone importance
         self.beta = beta    # Heuristic (distance) importance
@@ -21,7 +19,6 @@ class Colony:
         self.last_iteration_paths = []
 
     def _init_pheromones(self):
-        # Initialize pheromones on all edges to a small value
         matrix = {}
         n = self.problem.num_vertices
         for i in range(n):
@@ -37,27 +34,36 @@ class Colony:
         for ant in self.ants:
             path, length = ant.find_tour()
             all_paths.append((path, length))
-            
+
             # Update best path if this ant found a better one
             if length < self.best_path_length:
                 self.best_path_length = length
                 self.best_path = path
-        
+
+        # store last iteration paths for UI
         self.last_iteration_paths = list(all_paths)
 
-        # 2. Evaporate all pheromones
+        # 2. Evaporate all pheromones 
         for i in self.pheromone_matrix:
             for j in self.pheromone_matrix[i]:
                 self.pheromone_matrix[i][j] *= (1.0 - self.evaporation_rate)
+                
 
-        # 3. Deposit new pheromones based on ant paths
+        # Deposit from all ants proportional to tour quality (1 / length).
+        # We scale per-ant deposits by 1/num_ants to keep total deposit magnitude comparable
+        # to the single-best strategy and avoid runaway pheromone values.
+        per_ant_scale = 1.0 / max(1, self.num_ants)
         for path, length in all_paths:
-            pheromone_to_deposit = 1.0 / length
-            for i in range(len(path) - 1):
-                vertice_a = path[i]
-                vertice_b = path[i+1]
-                self.pheromone_matrix[vertice_a][vertice_b] += pheromone_to_deposit
-                self.pheromone_matrix[vertice_b][vertice_a] += pheromone_to_deposit # For symmetric TSP
+            if not path or length is None or length <= 0:
+                continue
+            delta = (1.0 / length) * per_ant_scale
+            for k in range(len(path) - 1):
+                a = path[k]
+                b = path[k + 1]
+
+                # add pheromone (no upper clamp)
+                self.pheromone_matrix[a][b] += delta
+                self.pheromone_matrix[b][a] += delta
 
         # Compute statistics for this iteration
         lengths = [length for (_, length) in all_paths] if all_paths else []

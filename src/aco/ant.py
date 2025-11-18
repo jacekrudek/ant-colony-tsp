@@ -1,4 +1,3 @@
-# in src/aco/ant.py
 import random
 
 class Ant:

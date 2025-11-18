@@ -3,21 +3,22 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UILabel, UIHorizontalSlider, UITextEntryLine, UIButton
 
+from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, TOP_PATH_COLORS, BEST_COLOR, PURPLE
+
 class Sidebar:
     """
     Manages the UI sidebar on the right side of the screen.
     """
-    def __init__(self, game_width, sidebar_width, screen_height, ui_manager, initial_params=None):
-        ip = initial_params or {}
-        alpha = float(ip.get("alpha", 1.0))
-        beta = float(ip.get("beta", 2.0))
-        evap = float(ip.get("evaporation_rate", 0.1))
-        ants = int(ip.get("num_ants", 50))
-        speed = int(ip.get("speed", 10)) 
+    def __init__(self, ui_manager):
+        alpha = 1.0
+        beta = 2.0
+        evap = 0.1
+        ants = 50
+        speed = 10
 
-        x = game_width + 10
+        x = LEFT_PANEL_WIDTH + CENTER_WIDTH + 10
         y = 10
-        w = sidebar_width - 20
+        w = SIDEBAR_WIDTH - 20
         spacing = 8
         label_h = 24
         slider_h = 20
@@ -29,6 +30,33 @@ class Sidebar:
                              text="Algorithm Parameters",
                              manager=ui_manager)
         y += label_h + spacing
+
+        # --- New: number of vertices + Generate button ---
+        self.vertices_label = UILabel(pygame.Rect(x, y, w, label_h),
+                                      text="Vertices:",
+                                      manager=ui_manager)
+        y += label_h + 4
+        self.vertices_input = UITextEntryLine(pygame.Rect(x, y, w, input_h), manager=ui_manager)
+        # set initial if provided
+        self.vertices_input.set_text("20")
+        y += input_h + spacing
+
+        self.generate_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                        text="Generate",
+                                        manager=ui_manager)
+        y += btn_h + spacing
+
+        # Edit vertices mode toggle
+        self.edit_vertices_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                             text="Edit vertices",
+                                             manager=ui_manager)
+        y += btn_h + spacing
+
+        # Clear board button
+        self.clear_board_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                           text="Clear board",
+                                           manager=ui_manager)
+        y += btn_h + spacing
 
         # Speed (iterations per second)
         self.speed_label = UILabel(pygame.Rect(x, y, w, label_h),
@@ -104,4 +132,11 @@ class Sidebar:
         # Step (single-iteration) button
         self.step_button = UIButton(pygame.Rect(x, y, w, btn_h),
                                     text="Step",
+                                    manager=ui_manager)
+        
+        y += btn_h + spacing
+
+        # Reset button
+        self.reset_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                    text="Reset",
                                     manager=ui_manager)

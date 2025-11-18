@@ -1,24 +1,20 @@
 import pygame
 
+from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, TOP_PATH_COLORS, BEST_COLOR, PURPLE, PADDING
+
+
 class MainPanel:
-    def __init__(self, width, height, src_w, src_h, purple=(150, 80, 200), best_color=(0, 255, 0), padding=8):
-        self.width = width
-        self.height = height
-        self.src_w = src_w
-        self.src_h = src_h
-        self.purple = purple
-        self.best_color = best_color
-        self.padding = padding
+    def __init__(self):
+        pass
 
     def _map_point(self, x, y, dst_w, dst_h):
-        pad = self.padding
-        sx = pad + (x / max(1, self.src_w)) * (dst_w - 2 * pad)
-        sy = pad + (y / max(1, self.src_h)) * (dst_h - 2 * pad)
+        sx = PADDING + (x / max(1, CENTER_WIDTH - 20)) * (dst_w - 2 * PADDING)
+        sy = PADDING + (y / max(1, SCREEN_HEIGHT - 20)) * (dst_h - 2 * PADDING)
         return int(sx), int(sy)
 
     def draw(self, target_surface, x_offset, problem, colony):
         """Render center visualization and blit to target_surface at x_offset,0."""
-        center_surf = pygame.Surface((self.width, self.height), flags=pygame.SRCALPHA)
+        center_surf = pygame.Surface((CENTER_WIDTH, SCREEN_HEIGHT), flags=pygame.SRCALPHA)
         center_surf.fill((0, 0, 0, 0))
 
         # compute max pheromone
@@ -39,9 +35,9 @@ class MainPanel:
                 width = 1 + int(norm * 2)      # 1..3
                 va = problem.vertices[i]
                 vb = problem.vertices[j]
-                p1 = self._map_point(va.x, va.y, self.width, self.height)
-                p2 = self._map_point(vb.x, vb.y, self.width, self.height)
-                col = (self.purple[0], self.purple[1], self.purple[2], alpha)
+                p1 = self._map_point(va.x, va.y, CENTER_WIDTH, SCREEN_HEIGHT)
+                p2 = self._map_point(vb.x, vb.y, CENTER_WIDTH, SCREEN_HEIGHT)
+                col = (PURPLE[0], PURPLE[1], PURPLE[2], alpha)
                 pygame.draw.line(center_surf, col, p1, p2, width)
 
         # draw highlighted best overall path (green) on top
@@ -49,13 +45,13 @@ class MainPanel:
             pts = []
             for vidx in colony.best_path:
                 v = problem.vertices[vidx]
-                pts.append(self._map_point(v.x, v.y, self.width, self.height))
+                pts.append(self._map_point(v.x, v.y, CENTER_WIDTH, SCREEN_HEIGHT))
             if len(pts) >= 2:
-                pygame.draw.lines(center_surf, self.best_color + (255,), False, pts, 3)
+                pygame.draw.lines(center_surf, BEST_COLOR + (255,), False, pts, 3)
 
         # draw vertices on top
         for v in problem.vertices:
-            p = self._map_point(v.x, v.y, self.width, self.height)
+            p = self._map_point(v.x, v.y, CENTER_WIDTH, SCREEN_HEIGHT)
             pygame.draw.circle(center_surf, (230, 230, 230, 255), p, 3)
 
         # blit to main surface
