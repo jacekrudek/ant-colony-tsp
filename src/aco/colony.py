@@ -1,5 +1,4 @@
-import random
-from src.aco.ant import Ant  # Upewnij się, że ścieżka jest poprawna
+from src.aco.ant import Ant  
 
 class Colony:
     def __init__(self, problem, num_ants, alpha, beta, evaporation_rate):

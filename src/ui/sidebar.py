@@ -46,12 +46,6 @@ class Sidebar:
                                         manager=ui_manager)
         y += btn_h + spacing
 
-        # Edit vertices mode toggle
-        self.edit_vertices_button = UIButton(pygame.Rect(x, y, w, btn_h),
-                                             text="Edit vertices",
-                                             manager=ui_manager)
-        y += btn_h + spacing
-
         # Clear board button
         self.clear_board_button = UIButton(pygame.Rect(x, y, w, btn_h),
                                            text="Clear board",

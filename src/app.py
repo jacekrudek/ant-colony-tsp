@@ -50,7 +50,6 @@ class App:
         self.iteration_count = 0
         self.simulation_running = False
         self.iterations_per_second = 10
-        self.edit_vertices_mode = False
 
 
     def run(self):

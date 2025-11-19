@@ -24,3 +24,8 @@ class TSPProblem:
                 else:
                     matrix[i][j] = vertice_a.distance_to(vertice_b)
         return matrix
+    
+    def rebuild(self):
+        """Recompute num_vertices and distance_matrix from current vertices list."""
+        self.num_vertices = len(self.vertices)
+        self.distance_matrix = self._calculate_distances()
