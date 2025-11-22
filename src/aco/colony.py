@@ -10,24 +10,70 @@ class Colony:
         self.evaporation_rate = evaporation_rate
 
         # --- State ---
-        self.pheromone_matrix = self._init_pheromones()
+        self.pheromone_matrix = self._init_pheromones(1.0)
+        self.pending_pheromone_matrix = self._init_pheromones(0.0)
         self.ants = [Ant(self) for _ in range(self.num_ants)]
+
         self.best_path = None
         self.best_path_length = float('inf')
 
         self.last_iteration_paths = []
 
-    def _init_pheromones(self):
+    def reset_pending(self):
+        n = self.problem.num_vertices
+        for i in range(n):
+            row = self.pending_pheromone_matrix[i]
+            for j in range(n):
+                row[j] = 0.0
+
+    def compute_edge_grade(self, i, j):
+        d = self.problem.distance_matrix[i][j]
+        if d <= 0:
+            return 0.0
+        return 1 / d
+    
+    
+    
+    # Ants call this while walking to accumulate into the pending matrix
+    def add_pending_pheromone(self, i, j, delta):
+        self.pending_pheromone_matrix[i][j] += delta
+
+    # Apply evaporation and then merge pending -> main, then clear pending
+    def apply_pending(self, clamp_min=None, clamp_max=None):
+        n = self.problem.num_vertices
+        pm = self.pheromone_matrix
+        pend = self.pending_pheromone_matrix
+
+        # Evaporate
+        evap = (1.0 - self.evaporation_rate)
+        for i in range(n):
+            for j in range(n):
+                pm[i][j] *= evap
+
+        # Merge pending
+        for i in range(n):
+            for j in range(n):
+                pm[i][j] += pend[i][j]
+                if clamp_min is not None and pm[i][j] < clamp_min:
+                    pm[i][j] = clamp_min
+                if clamp_max is not None and pm[i][j] > clamp_max:
+                    pm[i][j] = clamp_max
+                pend[i][j] = 0.0  # clear pending
+
+    def _init_pheromones(self, init_pheromone_lvl):
         matrix = {}
         n = self.problem.num_vertices
         for i in range(n):
             matrix[i] = {}
             for j in range(n):
                 if i != j:
-                    matrix[i][j] = 1.0  # Initial pheromone level
+                    matrix[i][j] = init_pheromone_lvl  # Initial pheromone level
+                else:
+                    matrix[i][j] = 0.0
         return matrix
 
     def run_iteration(self):
+        self.reset_pending()
         # 1. Let all ants find a path
         all_paths = []
         for ant in self.ants:
@@ -42,27 +88,7 @@ class Colony:
         # store last iteration paths for UI
         self.last_iteration_paths = list(all_paths)
 
-        # 2. Evaporate all pheromones 
-        for i in self.pheromone_matrix:
-            for j in self.pheromone_matrix[i]:
-                self.pheromone_matrix[i][j] *= (1.0 - self.evaporation_rate)
-                
-
-        # Deposit from all ants proportional to tour quality (1 / length).
-        # We scale per-ant deposits by 1/num_ants to keep total deposit magnitude comparable
-        # to the single-best strategy and avoid runaway pheromone values.
-        per_ant_scale = 1.0 / max(1, self.num_ants)
-        for path, length in all_paths:
-            if not path or length is None or length <= 0:
-                continue
-            delta = (1.0 / length) * per_ant_scale
-            for k in range(len(path) - 1):
-                a = path[k]
-                b = path[k + 1]
-
-                # add pheromone (no upper clamp)
-                self.pheromone_matrix[a][b] += delta
-                self.pheromone_matrix[b][a] += delta
+        self.apply_pending()
 
         # Compute statistics for this iteration
         lengths = [length for (_, length) in all_paths] if all_paths else []

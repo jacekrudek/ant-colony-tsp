@@ -35,7 +35,7 @@ class App:
             problem=self.problem,
             num_ants=50,
             alpha=1.0,
-            beta=2.0,
+            beta=1.0,
             evaporation_rate=0.1
         )
         self.side_panels = SidePanels(small_font=self.small_font)

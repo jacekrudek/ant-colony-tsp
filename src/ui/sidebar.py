@@ -11,7 +11,7 @@ class Sidebar:
     """
     def __init__(self, ui_manager):
         alpha = 1.0
-        beta = 2.0
+        beta = 1.0
         evap = 0.1
         ants = 50
         speed = 10

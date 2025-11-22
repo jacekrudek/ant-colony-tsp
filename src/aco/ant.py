@@ -9,7 +9,9 @@ class Ant:
         """Builds a complete tour and returns it with its total length."""
         self.path = []
         # Keep track of which vertices are not yet visited
-        self.visited = {vertice_idx: False for vertice_idx in range(self.problem.num_vertices)}
+        self.visited = []
+        for i in range(self.problem.num_vertices):
+            self.visited.append(False)
         
         # 1. Start at a random vertice
         current_vertice = random.randint(0, self.problem.num_vertices - 1)
@@ -19,12 +21,18 @@ class Ant:
         # 2. Build path vertice by vertice
         while len(self.path) < self.problem.num_vertices:
             next_vertice = self._choose_next_vertice(current_vertice)
+
+            delta = self.colony.compute_edge_grade(current_vertice, next_vertice)
+            self.colony.add_pending_pheromone(current_vertice, next_vertice, delta)
+
             self.path.append(next_vertice)
             self.visited[next_vertice] = True
             current_vertice = next_vertice
         
         # 3. Return to the start to complete the tour
         self.path.append(self.path[0])
+        delta = self.colony.compute_edge_grade(current_vertice, self.path[0])
+        self.colony.add_pending_pheromone(current_vertice, self.path[0], delta)
         
         # 4. Calculate the total length of this path
         length = 0.0
@@ -52,16 +60,11 @@ class Ant:
                 if distance == 0: continue # Avoid division by zero if somehow at same vertice
 
                 pheromone_level = pheromones[current_vertice][next_vertice] ** alpha
-                heuristic_value = (1.0 / distance) ** beta
-                prob = pheromone_level * heuristic_value
+                path_grade = (1.0 / distance) ** beta
+                prob = pheromone_level * path_grade
                 
                 probabilities[next_vertice] = prob
                 total_prob += prob
-
-        # --- Roulette Wheel Selection ---
-        if total_prob == 0:
-            # Failsafe: if all paths have 0 prob, just pick one at random
-            return [vertice for vertice, visited in self.visited.items() if not visited][0]
 
         # Pick a random "slice" of the wheel
         r = random.uniform(0.0, total_prob)
@@ -70,8 +73,6 @@ class Ant:
         # Find which vertice "owns" that slice
         for vertice, prob in probabilities.items():
             cumulative_prob += prob
-            if cumulative_prob >= r:
+            if r <= cumulative_prob:
                 return vertice
         
-        # Failsafe (shouldn't be reached)
-        return max(probabilities, key=probabilities.get)
