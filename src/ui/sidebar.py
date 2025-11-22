@@ -103,13 +103,8 @@ class Sidebar:
         y += label_h + 4
         self.ants_input = UITextEntryLine(pygame.Rect(x, y, w, input_h), manager=ui_manager)
         self.ants_input.set_text(str(ants))
-        y += input_h + spacing
-
-        self.apply_ants_button = UIButton(pygame.Rect(x, y, w, btn_h),
-                                          text="Apply ants count",
-                                          manager=ui_manager)
         
-        y += btn_h + spacing
+        y += input_h + spacing
 
         # Start / Stop buttons
         # Start visualisation

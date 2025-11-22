@@ -1,3 +1,5 @@
+import pygame
+
 # Layout constants
 LEFT_PANEL_WIDTH = 200
 CENTER_WIDTH = 800
@@ -10,3 +12,7 @@ PADDING = 8
 TOP_PATH_COLORS = [(255, 100, 100), (255, 180, 80), (80, 180, 255)]
 BEST_COLOR = (0, 255, 0)
 PURPLE = (150, 80, 200)
+
+if not pygame.font.get_init():
+    pygame.font.init()
+SMALL_FONT = pygame.font.SysFont(None, 16)

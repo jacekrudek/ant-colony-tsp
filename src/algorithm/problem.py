@@ -1,4 +1,4 @@
-from src.aco.vertice import Vertice
+from src.algorithm.vertice import Vertice
 import random
 
 from src.config import CENTER_WIDTH, SCREEN_HEIGHT

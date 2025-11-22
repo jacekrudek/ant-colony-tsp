@@ -1,6 +1,6 @@
 import pygame
 
-from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, TOP_PATH_COLORS, BEST_COLOR
+from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, TOP_PATH_COLORS, BEST_COLOR, SMALL_FONT
 
 
 class Renderer:
@@ -18,14 +18,14 @@ class Renderer:
         screen.fill((10, 10, 10))
 
         # LEFT panels
-        app.side_panels.draw(screen, app.problem, app.colony, TOP_PATH_COLORS if hasattr(app, "TOP_PATH_COLORS") else TOP_PATH_COLORS, BEST_COLOR if hasattr(app, "BEST_COLOR") else BEST_COLOR)
+        app.side_panels.draw(screen, app.aco_engine, TOP_PATH_COLORS if hasattr(app, "TOP_PATH_COLORS") else TOP_PATH_COLORS, BEST_COLOR if hasattr(app, "BEST_COLOR") else BEST_COLOR)
 
         # CENTER panel
-        app.main_panel.draw(screen, LEFT_PANEL_WIDTH, app.problem, app.colony)
+        app.main_panel.draw(screen, LEFT_PANEL_WIDTH, app.aco_engine)
 
         # iteration counter (top of center area)
         iter_text = f"Iteration: {app.iteration_count}"
-        iter_surf = app.small_font.render(iter_text, True, (220, 220, 220))
+        iter_surf = SMALL_FONT.render(iter_text, True, (220, 220, 220))
         iter_pos = (LEFT_PANEL_WIDTH + 8, 8)
         screen.blit(iter_surf, iter_pos)
 
