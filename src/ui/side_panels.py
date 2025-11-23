@@ -90,3 +90,54 @@ class SidePanels:
             text_y = (label_h - SMALL_FONT.get_height()) // 2
             wi.blit(text_surf, (8, text_y))
             target_surface.blit(wi, (0, y))
+
+    def draw_top9(self, target_surface, aco, top_path_colors, total_width):
+        # Gather paths (prefer aco.last_iteration_paths; fallback graph)
+        last_paths = getattr(aco, "last_iteration_paths", None)
+        if last_paths is None:
+            last_paths = getattr(aco.graph, "last_iteration_paths", []) or []
+        sorted_paths = sorted(last_paths, key=lambda pl: pl[1]) if last_paths else []
+        top_paths = sorted_paths[:9]
+
+        # distinct colors for 9 paths
+        palette = [
+            (255, 80, 80),    # red
+            (255, 160, 60),   # orange
+            (255, 230, 60),   # yellow
+            (100, 220, 100),  # green
+            (60, 180, 255),   # light blue
+            (30, 90, 200),    # blue
+            (170, 120, 255),  # violet
+            (255, 110, 200),  # pink
+            (180, 180, 180),  # gray
+        ]
+
+        cols = 3
+        rows = 3
+        cell_w = total_width // cols
+        cell_h = SCREEN_HEIGHT // rows
+        label_h = max(18, SMALL_FONT.get_height() + 6)
+
+        for idx in range(rows * cols):
+            r = idx // cols
+            c = idx % cols
+            x = c * cell_w
+            y = r * cell_h
+            panel = pygame.Surface((cell_w, cell_h))
+            panel.fill((24,24,32))
+            pygame.draw.rect(panel, (18,18,26), pygame.Rect(0,0,cell_w,label_h))
+
+            if idx < len(top_paths):
+                path, length = top_paths[idx]
+                color = palette[idx]
+                # draw path scaled to cell
+                self._draw_path_on_surface(panel, aco, path, color, top_offset=label_h)
+                text = f"{idx+1}. {length:.2f}"
+            else:
+                text = f"{idx+1}. -"
+
+            panel.blit(
+                SMALL_FONT.render(text, True, (230,230,230)),
+                (6, (label_h - SMALL_FONT.get_height()) // 2)
+            )
+            target_surface.blit(panel, (x, y))

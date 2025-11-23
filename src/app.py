@@ -41,6 +41,7 @@ class App:
         # UI logic
         self.event_handler = EventHandler(self)
         self.renderer = Renderer(self)
+        self.view_mode = "standard"
 
         # algorithm
         self.aco_engine = AcoEngine(

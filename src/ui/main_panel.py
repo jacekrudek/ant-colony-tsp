@@ -1,4 +1,5 @@
 import pygame
+import math
 
 from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, TOP_PATH_COLORS, BEST_COLOR, PURPLE, PADDING
 
@@ -17,22 +18,34 @@ class MainPanel:
         center_surf = pygame.Surface((CENTER_WIDTH, SCREEN_HEIGHT), flags=pygame.SRCALPHA)
         center_surf.fill((0, 0, 0, 0))
 
-        # compute max pheromone
-        max_ph = 0.0
-        for row in aco.pheromone_matrix.current.values():
-            for v in row.values():
-                if v > max_ph:
-                    max_ph = v
+        # collect pheromones
+        ph_values = []
+        for i_dict in aco.pheromone_matrix.current.values():
+            for v in i_dict.values():
+                ph_values.append(v)
+        if not ph_values:
+            ph_values = [1.0]
+
+        max_ph = max(ph_values)
+        min_ph = min(ph_values)
         if max_ph <= 0:
             max_ph = 1.0
 
-        # draw all edges in purple with alpha/width based on pheromone
+        # dynamic range compression (gamma + min alpha)
+        gamma = 0.5  # sqrt curve
+        rng = max_ph - min_ph if max_ph > min_ph else 1.0
+
+        # draw all edges with improved visibility
         for i in range(aco.graph.num_vertices):
             for j in range(i + 1, aco.graph.num_vertices):
                 pher = aco.pheromone_matrix.current.get(i, {}).get(j, 0.0)
-                norm = min(1.0, pher / max_ph)
-                alpha = int(40 + 215 * norm)   # 40..255
-                width = 1 + int(norm * 2)      # 1..3
+                # normalize in current range
+                norm = (pher - min_ph) / rng
+                # gamma adjust
+                norm = math.pow(max(0.0, norm), gamma)
+                # alpha + width mapping
+                alpha = int(90 + 165 * norm)          # 90..255 (never too dark)
+                width = 1 + int(norm * 3)             # 1..4
                 va = aco.graph.vertices[i]
                 vb = aco.graph.vertices[j]
                 p1 = self._map_point(va.x, va.y, CENTER_WIDTH, SCREEN_HEIGHT)

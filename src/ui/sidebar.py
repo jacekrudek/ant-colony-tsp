@@ -129,3 +129,9 @@ class Sidebar:
         self.reset_button = UIButton(pygame.Rect(x, y, w, btn_h),
                                     text="Reset",
                                     manager=ui_manager)
+        
+        y += btn_h + spacing
+
+        self.view_toggle_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                    text="View: Standard",
+                                    manager=ui_manager)

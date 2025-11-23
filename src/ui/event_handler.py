@@ -107,6 +107,14 @@ class EventHandler:
                 elif event.ui_element == self.sidebar.clear_board_button:
                     self.app.aco_engine.graph.num_vertices = 0
                     self.reset_simulation()
+                elif event.ui_element == self.sidebar.view_toggle_button:
+                    if self.app.view_mode == "standard":
+                        self.app.view_mode = "top10"
+                        self.sidebar.view_toggle_button.set_text("View: Top 10")
+                    else:
+                        self.app.view_mode = "standard"
+                        self.sidebar.view_toggle_button.set_text("View: Standard")
+# ...existing code...
 
     def reset_simulation(self, graph = None):
 
