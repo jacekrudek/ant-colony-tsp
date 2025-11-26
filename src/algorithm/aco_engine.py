@@ -44,8 +44,3 @@ class AcoEngine:
             "paths_count": len(lengths)
         }
 
-    # def rebuild(self):
-    #     self.graph.num_vertices = len(self.graph.vertices)
-    #     self.pheromone_matrix = PheromoneMatrix(self.graph.num_vertices, self.evaporation_rate)
-
-    #     self.graph.calculate_distances()

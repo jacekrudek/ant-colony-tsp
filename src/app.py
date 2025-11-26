@@ -6,9 +6,6 @@ from src.ui.main_panel import MainPanel
 from src.ui.event_handler import EventHandler
 from src.ui.renderer import Renderer
 
-from src.algorithm.problem import TSPProblem
-from src.algorithm.colony import Colony
-
 from src.algorithm.aco_engine import AcoEngine
 from src.ui.file_manager import FileManager
 
@@ -80,7 +77,4 @@ class App:
                 stats = self.aco_engine.run_iteration()
                 self.iteration_accumulator -= interval
                 self.iteration_count += 1
-                # print(f"[iter {self.iteration_count}] best={stats['best_length']:.4f} "
-                #       f"min={stats['min_length']:.4f} avg={stats['avg_length']:.4f} "
-                #       f"paths={stats['paths_count']}")
         self.ui_manager.update(time_delta)

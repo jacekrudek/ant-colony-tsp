@@ -1,7 +1,6 @@
 import pygame
 import pygame_gui
 
-from src.algorithm.colony import Colony
 from src.algorithm.vertice import Vertice
 from src.algorithm.aco_engine import AcoEngine
 
@@ -25,28 +24,28 @@ class EventHandler:
 
             self.ui.process_events(event)
 
-            # --- Vertex editing with mouse ---
+            # Vertex editing with mouse 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 if self.app.file_manager and self.app.file_manager.is_open():
                     continue
 
                 mx, my = event.pos
-                # Only allow clicks inside center panel region
+
                 if LEFT_PANEL_WIDTH <= mx <= LEFT_PANEL_WIDTH + CENTER_WIDTH and 0 <= my <= SCREEN_HEIGHT:
 
                     if event.button == 1:
-                        # Add vertex
+
                         self.app.aco_engine.graph.vertices.append(Vertice(mx - LEFT_PANEL_WIDTH, my))
 
                         self.app.aco_engine.graph.num_vertices += 1
-                        #self.app.aco_engine.rebuild()
+
 
                         self.reset_simulation(self.app.aco_engine.graph)
 
                         print(f"Added vertex at ({mx - LEFT_PANEL_WIDTH},{my})")
 
-            # --- Sliders ---
+            # Sliders
             if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                 if event.ui_element == self.sidebar.alpha_slider:
                     val = event.value
@@ -62,10 +61,10 @@ class EventHandler:
                     self.sidebar.evap_label.set_text(f"Evaporation: {val:.2f}")
                 elif event.ui_element == self.sidebar.speed_slider:
                     val = event.value
-                    self.app.simulation_speed = val
+                    self.app.iterations_per_second = val
                     self.sidebar.speed_label.set_text(f"Speed: {val} it/s")
 
-            # --- Text input finished (ants count) ---
+            # Text input finished
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
                 if event.ui_element == self.sidebar.ants_input:
                     try:
@@ -94,7 +93,7 @@ class EventHandler:
                         self.reset_simulation()
                         print("Invalid ants count")
 
-            # --- Buttons ---
+            # Buttons
             if event.type == pygame_gui.UI_BUTTON_PRESSED: 
                 if event.ui_element == self.sidebar.start_button:
                     if self._can_run():
@@ -131,8 +130,6 @@ class EventHandler:
                     self.app.file_manager.open_load_vertices_dialog()
                 elif event.ui_element == self.sidebar.export_vertice_button:
                     self.app.file_manager.open_export_vertices_dialog()
-                    
-# ...existing code...
 
     def reset_simulation(self, graph = None):
 
