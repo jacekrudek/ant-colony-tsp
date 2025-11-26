@@ -10,6 +10,7 @@ from src.algorithm.problem import TSPProblem
 from src.algorithm.colony import Colony
 
 from src.algorithm.aco_engine import AcoEngine
+from src.ui.file_manager import FileManager
 
 from src.config import SCREEN_WIDTH, SCREEN_HEIGHT
 
@@ -42,7 +43,7 @@ class App:
         self.event_handler = EventHandler(self)
         self.renderer = Renderer(self)
         self.view_mode = "standard"
-
+        
         # algorithm
         self.aco_engine = AcoEngine(
             alpha=1.0,
@@ -52,9 +53,17 @@ class App:
             num_ants = 50
         )
 
+        # file manager
+        self.file_manager = FileManager(
+            ui_manager=self.ui_manager, 
+            graph=self.aco_engine.graph,
+            on_vertices_loaded=self.event_handler.reset_simulation
+        )
+
+
 
     def run(self):
-        """The main game loop."""
+        """main loop"""
         while self.running:
             time_delta = self.clock.tick(60) / 1000.0  # seconds
             self.event_handler.process()

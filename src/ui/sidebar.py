@@ -135,3 +135,15 @@ class Sidebar:
         self.view_toggle_button = UIButton(pygame.Rect(x, y, w, btn_h),
                                     text="View: Standard",
                                     manager=ui_manager)
+        
+        y += btn_h + spacing
+
+        self.load_vertice_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                    text="Load vertices",
+                                    manager=ui_manager)
+        
+        y += btn_h + spacing
+
+        self.export_vertice_button = UIButton(pygame.Rect(x, y, w, btn_h),
+                                    text="Export vertices",
+                                    manager=ui_manager)

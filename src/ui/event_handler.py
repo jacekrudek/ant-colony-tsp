@@ -20,10 +20,17 @@ class EventHandler:
                 self.app.running = False
                 continue
 
+            if self.app.file_manager:
+                self.app.file_manager.handle_event(event)
+
             self.ui.process_events(event)
 
             # --- Vertex editing with mouse ---
             if event.type == pygame.MOUSEBUTTONDOWN:
+
+                if self.app.file_manager and self.app.file_manager.is_open():
+                    continue
+
                 mx, my = event.pos
                 # Only allow clicks inside center panel region
                 if LEFT_PANEL_WIDTH <= mx <= LEFT_PANEL_WIDTH + CENTER_WIDTH and 0 <= my <= SCREEN_HEIGHT:
@@ -69,6 +76,9 @@ class EventHandler:
                             self.reset_simulation(self.app.aco_engine.graph)
                             print(f"Applied ants count {ants}")
                     except Exception:
+                        self.app.aco_engine.num_ants = 20
+                        # Rebuild ants list
+                        self.reset_simulation(self.app.aco_engine.graph)
                         print("Invalid ants count")
                 elif event.ui_element == self.sidebar.vertices_input:
                     try:
@@ -77,8 +87,11 @@ class EventHandler:
                             self.app.aco_engine.graph.num_vertices = vertices
                             # Rebuild ants list
                             self.reset_simulation()
-                            print(f"Applied ants count {ants}")
+                            print(f"Applied vertice count {vertices}")
                     except Exception:
+                        self.app.aco_engine.graph.num_vertices = 10
+                            # Rebuild ants list
+                        self.reset_simulation()
                         print("Invalid ants count")
 
             # --- Buttons ---
@@ -109,11 +122,16 @@ class EventHandler:
                     self.reset_simulation()
                 elif event.ui_element == self.sidebar.view_toggle_button:
                     if self.app.view_mode == "standard":
-                        self.app.view_mode = "top10"
-                        self.sidebar.view_toggle_button.set_text("View: Top 10")
+                        self.app.view_mode = "top9"
+                        self.sidebar.view_toggle_button.set_text("View: Top 9")
                     else:
                         self.app.view_mode = "standard"
                         self.sidebar.view_toggle_button.set_text("View: Standard")
+                elif event.ui_element == self.sidebar.load_vertice_button:
+                    self.app.file_manager.open_load_vertices_dialog()
+                elif event.ui_element == self.sidebar.export_vertice_button:
+                    self.app.file_manager.open_export_vertices_dialog()
+                    
 # ...existing code...
 
     def reset_simulation(self, graph = None):
