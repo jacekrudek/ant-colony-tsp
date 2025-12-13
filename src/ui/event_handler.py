@@ -1,7 +1,7 @@
 import pygame
 import pygame_gui
 
-from src.algorithm.vertice import Vertice
+from src.map.vertice import Vertice
 from src.algorithm.aco_engine import AcoEngine
 
 from src.config import LEFT_PANEL_WIDTH, CENTER_WIDTH, SIDEBAR_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT

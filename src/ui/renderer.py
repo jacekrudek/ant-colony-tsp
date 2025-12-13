@@ -21,7 +21,7 @@ class Renderer:
         sidebar_bg.fill((50,50,50))
         screen.blit(sidebar_bg, (sidebar_x, 0))
 
-        if getattr(app, "view_mode", "standard") == "top10":
+        if getattr(app, "view_mode", "standard") == "top9":
             # Use combined width of previous side + main area
             full_width = LEFT_PANEL_WIDTH + CENTER_WIDTH
             app.side_panels.draw_top9(screen, app.aco_engine, TOP_PATH_COLORS, full_width)

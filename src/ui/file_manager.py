@@ -3,7 +3,7 @@ import pygame
 import pygame_gui
 from pygame_gui.windows import UIFileDialog
 
-from src.algorithm.vertice import Vertice
+from src.map.vertice import Vertice
 from src.config import CENTER_WIDTH, SCREEN_HEIGHT
 
 
