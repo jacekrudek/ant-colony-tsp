@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+import time
 from src.ui.sidebar import Sidebar
 from src.ui.side_panels import SidePanels
 from src.ui.main_panel import MainPanel
@@ -74,7 +75,13 @@ class App:
             self.iteration_accumulator += time_delta
             interval = 1.0 / max(1, self.iterations_per_second)
             while self.iteration_accumulator >= interval:
+                start_time = time.perf_counter()
                 stats = self.aco_engine.run_iteration()
+                end_time = time.perf_counter()
+                
+                execution_time_ms = (end_time - start_time) * 1000
+                print(f"Iteration {self.iteration_count}: {execution_time_ms:.2f}ms")
+                
                 self.iteration_accumulator -= interval
                 self.iteration_count += 1
         self.ui_manager.update(time_delta)
