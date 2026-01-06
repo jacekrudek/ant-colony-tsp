@@ -15,9 +15,9 @@ py --version
 ```
 
 Additionally, the following dependencies are required: 
-- pygame
 - pygame-ce
 - pygame_gui
+- python-i18n
 
 ## How to launch app
 ```bash
