@@ -58,6 +58,9 @@ class App:
             on_vertices_loaded=self.event_handler.reset_simulation
         )
 
+        # Performance monitoring
+        self.execution_times = []
+
 
 
     def run(self):
@@ -80,7 +83,12 @@ class App:
                 end_time = time.perf_counter()
                 
                 execution_time_ms = (end_time - start_time) * 1000
-                print(f"Iteration {self.iteration_count}: {execution_time_ms:.2f}ms")
+                self.execution_times.append(execution_time_ms)
+                
+                # Oblicz średnią wszystkich dotychczasowych czasów
+                avg_time = sum(self.execution_times) / len(self.execution_times)
+                
+                print(f"Iteration {self.iteration_count}: {execution_time_ms:.2f}ms, Avg: {avg_time:.2f}ms")
                 
                 self.iteration_accumulator -= interval
                 self.iteration_count += 1
