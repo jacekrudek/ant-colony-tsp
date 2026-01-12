@@ -159,6 +159,8 @@ class EventHandler:
                 graph=graph
             )
 
+        self.app.file_manager.graph = self.app.aco_engine.graph
+
         self.app.iteration_count = 0
         self.app.iteration_accumulator = 0.0
         
