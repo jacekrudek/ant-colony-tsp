@@ -69,29 +69,32 @@ class EventHandler:
                 if event.ui_element == self.sidebar.ants_input:
                     try:
                         ants = int(self.sidebar.ants_input.get_text())
-                        if ants > 0:
+                        if ants > 0 and ants <= 100:
                             self.app.aco_engine.num_ants = ants
                             # Rebuild ants list
                             self.reset_simulation(self.app.aco_engine.graph)
                             print(f"Applied ants count {ants}")
+                        else:
+                            self.sidebar.ants_input.set_text(str(self.app.aco_engine.num_ants))
+                            print("Invalid ants count - outside range")
                     except Exception:
-                        self.app.aco_engine.num_ants = 20
-                        # Rebuild ants list
-                        self.reset_simulation(self.app.aco_engine.graph)
+                        self.sidebar.ants_input.set_text(str(self.app.aco_engine.num_ants))
                         print("Invalid ants count")
                 elif event.ui_element == self.sidebar.vertices_input:
                     try:
                         vertices = int(self.sidebar.vertices_input.get_text())
-                        if vertices > 0:
+                        if vertices > 0 and vertices <= 150:
                             self.app.aco_engine.graph.num_vertices = vertices
                             # Rebuild ants list
                             self.reset_simulation()
                             print(f"Applied vertice count {vertices}")
+                        else:
+                            self.sidebar.vertices_input.set_text(str(self.app.aco_engine.graph.num_vertices))
+                            print("Invalid vertice count - outside range")
                     except Exception:
-                        self.app.aco_engine.graph.num_vertices = 10
-                            # Rebuild ants list
-                        self.reset_simulation()
-                        print("Invalid ants count")
+                        self.sidebar.vertices_input.set_text(str(self.app.aco_engine.graph.num_vertices))
+                        print("Invalid vertice count")
+
 
             # Buttons
             if event.type == pygame_gui.UI_BUTTON_PRESSED: 
@@ -166,6 +169,7 @@ class EventHandler:
         
         self.sidebar.vertices_input.set_text(str(self.app.aco_engine.graph.num_vertices))
 
+    
     def _can_run(self):
         if self.app.aco_engine.graph.num_vertices >= 2:
             return True
